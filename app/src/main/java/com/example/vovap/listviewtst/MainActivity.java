@@ -34,6 +34,7 @@ public class MainActivity extends Activity {
                 , simple_gallery_item
                 , listItems);
         listView.setAdapter(adapter);
+
     }
 
     public void onPressAdd(View view) {
