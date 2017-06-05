@@ -1,25 +1,46 @@
 package com.example.vovap.listviewtst;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import static android.R.layout.simple_gallery_item;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
+
+import static android.R.layout.simple_list_item_1;
 
 public class MainActivity extends Activity {
 
+    private final String firstName = "Po";
+    private final String lastName = "Sun";
+
     //LIST OF ARRAY STRINGS WHICH WILL SERVE AS LIST ITEMS
-    ArrayList<String> listItems = new ArrayList<>();
+    List<String> listItems = new ArrayList<>();
 
     //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
     ArrayAdapter<String> adapter;
 
     private ListView listView;
+
+    private AsyncTask<String, Void, List<String>> task;
+
+    private Retrofit retrofit;
+    public interface ICNDB {
+        @GET("/jokes/random")
+        Call<IcndbJoke> getJoke(@Query("firstName") String firstName,
+                                @Query("lastName") String lastName,
+                                @Query("limitTo") String limitTo);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,24 +52,50 @@ public class MainActivity extends Activity {
         }
 
         adapter = new ArrayAdapter<>(this
-                , simple_gallery_item
+                , simple_list_item_1
                 , listItems);
+
+        retrofit = new Retrofit.Builder()
+                .baseUrl("http://api.icndb.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
         listView.setAdapter(adapter);
-
     }
 
-    public void onPressAdd(View view) {
-        TextView textView = (TextView) findViewById(R.id.editText2);
-        String itemString = textView.getText().toString();
-        textView.setText(null);
-
-        listItems.add(itemString);
-        adapter.notifyDataSetChanged();
+    public void onGetJokes(View view){
+        task = new JokeTask().execute(firstName, lastName);
     }
+
 
     public void onPressDeleteAll(View view){
         listItems.removeAll(listItems);
         adapter.notifyDataSetChanged();
+    }
+
+    private class JokeTask extends AsyncTask<String, Void, List<String>> {
+        @Override
+        protected List<String> doInBackground(String... params) {
+            ICNDB icndb = retrofit.create(ICNDB.class);
+            List<String> jokes = new ArrayList<>();
+
+            try {
+                Call<IcndbJoke> icndbJoke = icndb.getJoke(params[0], params[1], "[nerdy]");
+
+                Response<IcndbJoke> r = icndbJoke.execute();
+                String joke = r.body().getJoke();
+                jokes.add(joke);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return jokes;
+        }
+
+        @Override
+        protected void onPostExecute(List<String> result) {
+            listItems.addAll(0, result);
+            adapter.notifyDataSetChanged();
+        }
     }
 
 
