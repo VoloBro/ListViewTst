@@ -1,12 +1,20 @@
 package com.example.vovap.listviewtst;
 
-public class IcndbJoke {
+import java.util.ArrayList;
+import java.util.List;
+
+public class IcndbJokeList {
 
     private String type;
-    private Joke value;
+    private Joke[] value;
 
-    public String getJoke() {
-        return value.getJoke();
+    public List<String> getJoke() {
+        List<String> l = new ArrayList<>();
+        for (Joke v: value){
+            l.add(v.getJoke());
+        }
+
+        return l;
     }
 
     public String getType() {
@@ -17,11 +25,11 @@ public class IcndbJoke {
         this.type = type;
     }
 
-    public Joke getValue() {
+    public Joke[] getValue() {
         return value;
     }
 
-    public void setValue(Joke value) {
+    public void setValue(Joke[] value) {
         this.value = value;
     }
 

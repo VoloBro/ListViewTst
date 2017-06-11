@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 import static android.R.layout.simple_list_item_1;
@@ -36,8 +36,9 @@ public class MainActivity extends Activity {
 
     private Retrofit retrofit;
     public interface ICNDB {
-        @GET("/jokes/random")
-        Call<IcndbJoke> getJoke(@Query("firstName") String firstName,
+        @GET("/jokes/random/{amt}")
+        Call<IcndbJokeList> getJoke(@Path("amt") String amtJokes,
+                                @Query("firstName") String firstName,
                                 @Query("lastName") String lastName,
                                 @Query("limitTo") String limitTo);
     }
@@ -64,12 +65,15 @@ public class MainActivity extends Activity {
     }
 
     public void onGetJokes(View view){
-        task = new JokeTask().execute(firstName, lastName);
+        task = new JokeTask().execute("1", firstName, lastName);
     }
 
+    public void onGet100Jokes(View view){
+        task = new JokeTask().execute("100", firstName, lastName);
+    }
 
     public void onPressDeleteAll(View view){
-        listItems.removeAll(listItems);
+        listItems.clear();
         adapter.notifyDataSetChanged();
     }
 
@@ -80,11 +84,10 @@ public class MainActivity extends Activity {
             List<String> jokes = new ArrayList<>();
 
             try {
-                Call<IcndbJoke> icndbJoke = icndb.getJoke(params[0], params[1], "[nerdy]");
+                Call<IcndbJokeList> icndbJoke = icndb.getJoke(params[0], params[1], params[2], "[nerdy]");
+                //                String url = icndbJoke.request().url().toString();
+                jokes = icndbJoke.execute().body().getJoke();
 
-                Response<IcndbJoke> r = icndbJoke.execute();
-                String joke = r.body().getJoke();
-                jokes.add(joke);
             } catch (Exception e) {
                 e.printStackTrace();
             }

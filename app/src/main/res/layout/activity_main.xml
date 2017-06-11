@@ -18,7 +18,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
+            <Button
+                android:id="@+id/button5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:onClick="onGet100Jokes"
+                android:layout_weight="1"
+                android:text="Get100Jokes" />
             <Button
                 android:id="@+id/button3"
                 android:layout_width="match_parent"
@@ -26,7 +33,7 @@
                 android:layout_gravity="end"
                 android:onClick="onGetJokes"
                 android:layout_weight="1"
-                android:text="Get Jokes" />
+                android:text="Get Joke" />
 
             <Button
                 android:id="@+id/button4"
