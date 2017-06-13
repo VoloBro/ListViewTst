@@ -1,3 +1,3 @@
 # ListViewTst
 
-Test proj
+Android Studio Test proj
