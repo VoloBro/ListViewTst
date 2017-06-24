@@ -7,6 +7,12 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +71,7 @@ public class MainActivity extends Activity {
     }
 
     public void onGetJokes(View view){
-        task = new JokeTask().execute("1", firstName, lastName);
+        task = new NewsTask().execute();//new JokeTask().execute("1", firstName, lastName);
     }
 
     public void onGet100Jokes(View view){
@@ -75,6 +81,38 @@ public class MainActivity extends Activity {
     public void onPressDeleteAll(View view){
         listItems.clear();
         adapter.notifyDataSetChanged();
+    }
+
+    private class NewsTask extends AsyncTask<String, Void, List<String>> {
+        @Override
+        protected List<String> doInBackground(String... params) {
+            List<String> titles = new ArrayList<>();
+
+            Document doc = null;
+            try {
+                doc = Jsoup.connect("https://m.zn.ua/")
+                        .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
+                        .referrer("http://www.google.com")
+                        .get();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Elements newsHeadlines = doc.select("ul.news_list>li.news_item");
+
+            for (Element e: newsHeadlines){
+                String url = e.select("a.news_link").attr("href");
+                String headline = e.select("span.news_title").text();
+                titles.add(headline);
+            }
+
+            return titles;
+        }
+
+        @Override
+        protected void onPostExecute(List<String> result) {
+            listItems.addAll(0, result);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private class JokeTask extends AsyncTask<String, Void, List<String>> {
