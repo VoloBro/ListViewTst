@@ -1,9 +1,12 @@
 package com.example.vovap.listviewtst;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -14,7 +17,9 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -32,6 +37,8 @@ public class MainActivity extends Activity {
 
     //LIST OF ARRAY STRINGS WHICH WILL SERVE AS LIST ITEMS
     List<String> listItems = new ArrayList<>();
+
+    Map<String, String> topicsMap = new HashMap<>();
 
     //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
     ArrayAdapter<String> adapter;
@@ -68,7 +75,21 @@ public class MainActivity extends Activity {
                 .build();
 
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                String key = listItems.get(i);
+                String topicUrl = topicsMap.get(key);
+
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(topicUrl));
+                startActivity(browserIntent);
+            }
+        });
+
     }
+
 
     public void onGetJokes(View view){
         task = new NewsTask().execute();//new JokeTask().execute("1", firstName, lastName);
@@ -88,9 +109,12 @@ public class MainActivity extends Activity {
         protected List<String> doInBackground(String... params) {
             List<String> titles = new ArrayList<>();
 
+            String siteUrl = "https://zn.ua";
+
+
             Document doc = null;
             try {
-                doc = Jsoup.connect("https://m.zn.ua/")
+                doc = Jsoup.connect(siteUrl)
                         .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
                         .referrer("http://www.google.com")
                         .get();
@@ -100,8 +124,9 @@ public class MainActivity extends Activity {
             Elements newsHeadlines = doc.select("ul.news_list>li.news_item");
 
             for (Element e: newsHeadlines){
-                String url = e.select("a.news_link").attr("href");
+                String url = siteUrl + e.select("a.news_link").attr("href");
                 String headline = e.select("span.news_title").text();
+                topicsMap.put(headline, url);
                 titles.add(headline);
             }
 
